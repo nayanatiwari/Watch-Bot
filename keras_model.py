@@ -2,6 +2,7 @@ import keras
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+from keras import Model
 from keras.activations import relu
 from keras.layers import LSTM, Activation, Dense, Embedding, Input
 from keras.optimizers import Adam
@@ -30,14 +31,15 @@ class OurModel():
         self.hashed_words = tf.strings.to_hash_bucket_fast(words, hash_buckets)
 
         # Build the Keras model.
-        self.model = keras.Sequential([
-            Input(shape=[None], dtype=tf.int64, ragged=True),
-            Embedding(hash_buckets, 16),
-            LSTM(32, use_bias=False),
-            Dense(32),
-            Activation(relu),
-            Dense(1),
-        ])
+        inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
+        x = Embedding(hash_buckets, 16)(inpt)
+        x = LSTM(32, use_bias=False)(x)
+        x = Dense(32)(x)
+        x = Activation(relu)(x)
+        x = Dense(1)(x)
+
+        self.model = Model(inpt, x)
+        
         self.model.compile(
             loss='binary_crossentropy', 
             optimizer=Adam(0.001)
@@ -87,8 +89,8 @@ class OurModel():
             correct = np.sum(correct_pos) + np.sum(correct_neg)
             uncertain = np.sum((predicts >= confidence) <= (1-confidence))
             print("\n" + name.title())
-            print(correct, "correct out of", self.data_len)
-            print(correct/self.data_len)
+            print(correct, "correct out of", len(inputs))
+            print(correct/len(inputs))
             print(uncertain, "uncertain")
 
         calc_correct(x, y, name="training set")

@@ -1,4 +1,3 @@
-import json
 import os
 # pretty printing. just nice for visualizing big lists/dicts
 from pprint import pprint
@@ -8,40 +7,46 @@ import argparse
 from data_processing import *
 from scrape_reddit import *
 from keras_model import *
+from data_gathering import *
 
-# np.random.seed(0)
-# tf.random.set_seed(0)
-
-def save_data(data, filename):
-    with open("data/"+filename+".json", "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def load_data(filename):
-    with open("data/"+filename+".json", "r") as f:
-        comments = json.load(f)
-    return comments
+np.random.seed(0)
+tf.random.set_seed(0)
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--name",required=True,type=str,help="name to save this model under")
+parser.add_argument("--minidata",action="store_true",default=False,help="use mini dataset (500 examples each)")
 parser.add_argument("--epochs",type=int,default=200)
 args = parser.parse_args()
 
+
 ### Load Data
 
-if not os.path.exists("data/neg_data.json"):
-    pos_comments = get_comments(subreddit="SuicideWatch")
-    save_data(pos_comments, "pos_data")
-    neg_comments = get_comments(subreddit="CasualConversation")
-    save_data(neg_comments, "neg_data")
+# positive
+if not os.path.exists("data/pos_data.json"):
+    pos_examples = request_format_save(size=10000, pos=True)
 else:
-    pos_comments = load_data("pos_data")
-    neg_comments = load_data("neg_data")
-print("Positive examples:", len(pos_comments), "Negative examples:", len(neg_comments))
+    pos_examples = load_json_data("pos_data")
 
-p = format_comments(pos_comments)
-n = format_comments(neg_comments)
+# negative
+if not os.path.exists("data/neg_data.json"):
+    neg_examples = request_format_save(size=10000, pos=False)
+else:
+    neg_examples = load_json_data("neg_data")
+
+print("Positive examples:", len(pos_examples), "Negative examples:", len(neg_examples))
+
+# trim to 1000 words max, remove words with numbers
+p = [i.split()[:1000] for i in pos_examples]
+n = [i.split()[:1000] for i in neg_examples]
+p = [[j for j in i if not re.match(r"[0-9]", j)] for i in p]
+n = [[j for j in i if not re.match(r"[0-9]", j)] for i in n]
+p = [" ".join(i) for i in p]
+n = [" ".join(i) for i in n]
+
+if args.minidata:
+    p = p[:500]
+    n = n[:500]
 
 # combine and shuffle
 data = np.array(p + n)
@@ -51,6 +56,7 @@ indices = np.arange(len(data))
 np.random.shuffle(indices)
 slabels = labels[indices]
 sdata = data[indices]
+
 
 ### Run Model
 

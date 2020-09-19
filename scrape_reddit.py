@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 
-def get_jsonparsed_data(url):
+def _get_jsonparsed_data(url):
     """
     Receive the content of ``url``, parse it as JSON and return the object.
 
@@ -23,9 +23,9 @@ def get_jsonparsed_data(url):
     return json.loads(data)
 
 
-def pushshift_comment(q = None, ids = None, size = None, fields = None, sort = None, 
+def _pushshift_request_full(q = None, ids = None, size = None, fields = None, sort = None, 
     sort_type = None, aggs = None, author = None, subreddit = None, after = None, before = None, 
-    frequency = None, metadata = None):
+    frequency = None, metadata = None, submissions=False):
     """
     Returns a dictionary of the data returned from the pushift request 
     
@@ -43,6 +43,7 @@ def pushshift_comment(q = None, ids = None, size = None, fields = None, sort = N
         before - Search before this time (int of epoch value or Integer + "s,m,h,d" (i.e. 30d for 30 days))
         frequency - Used with the aggs parameter when set to created_utc ("second", "minute", "hour", "day")
         metadata - display metadata about the query (bool)
+        submissions - bool, whether submissions (or comments, if false)
 
     Output:
         dict - a dictionary of comments/info
@@ -80,7 +81,12 @@ def pushshift_comment(q = None, ids = None, size = None, fields = None, sort = N
             args[key] = str(value)
 
     # Create url for request   
-    url = "https://api.pushshift.io/reddit/search/comment/?"
+    url = "https://api.pushshift.io/reddit/search/"
+    if submissions:
+        url += "submission"
+    else:
+        url += "comment"
+    url += "/?"
     for key, value in args.items():
         # deal with spaces
         value = value.replace(" ", "%20")
@@ -91,10 +97,11 @@ def pushshift_comment(q = None, ids = None, size = None, fields = None, sort = N
 
 
     # Use url to get dictionary of info
-    return get_jsonparsed_data(url)
+    return _get_jsonparsed_data(url)
 
 
-def get_comments(term=None, before=None, after=None, subreddit=None):
+def pushshift_request(term=None, before=None, after=None, subreddit=None, 
+        submissions=True, size=1000):
     """
     input:
         - term: the string to include comments for
@@ -106,11 +113,18 @@ def get_comments(term=None, before=None, after=None, subreddit=None):
     """
     sort = "desc"
     sort_type = "created_utc"
-    fields = "created_utc,body"
-    size = 100
+    if submissions:
+        fields = "created_utc,selftext"
+    else:
+        fields = "created_utc,body"
 
-    data = pushshift_comment(q = term, before = before, after = after,\
+    data = _pushshift_request_full(q = term, before = before, after = after,\
         subreddit = subreddit, sort = sort, sort_type = sort_type, 
-        fields = fields, size = size)
+        fields = fields, size = size, submissions=submissions)
 
-    return data["data"]
+    data = data["data"]
+
+    if len(data) <= 5 and size > 5:
+        raise ValueError("Only " + str(len(data)) + " results found in pushshift request")
+
+    return data

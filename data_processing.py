@@ -1,10 +1,10 @@
 from scrape_reddit import *
 
 
-def format_comments(comments_dict):
+def format_comments(data):
     """
     args:
-        comments_dict: dict with 'body' and 'created_utc' keys
+        data: list of dicts with 'body'/'selftext' and 'created_utc' keys
     """
     bad_bodies = (
         "[removed]", 
@@ -16,8 +16,14 @@ def format_comments(comments_dict):
         "http://www.",
     )
 
-    bodies = [i["body"] for i in comments_dict]
-    # remove bad stuff
+    if any("body" in i for i in data):
+        bodies = [i["body"] for i in data if "body" in i]
+    elif any("selftext" in i for i in data):
+        bodies = [i["selftext"] for i in data if "selftext" in i]
+    else:
+        raise KeyError("The expected keys werent found...")
+    # remove empty, bad stuff
+    bodies = [i for i in bodies if len(i) > 25]
     bodies = [i for i in bodies if i not in bad_bodies]
     bodies = [i for i in bodies if not any(j in i for j in bad_phrases)]
     # remove punctuation
