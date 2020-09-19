@@ -34,3 +34,12 @@ def ml_model(sentences, true_labels):
     keras_model.compile(loss='binary_crossentropy', optimizer='rmsprop')
     keras_model.fit(hashed_words, is_question, epochs=200)
     print(keras_model.predict(hashed_words))
+
+
+sentences = [
+    "hello",
+    "goodbye",
+]
+labels = [True, False]
+
+ml_model(sentences, labels)

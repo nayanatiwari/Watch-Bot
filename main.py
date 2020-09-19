@@ -1,27 +1,34 @@
-from pprint import pprint # pretty printing. just nice for visualizing big lists/dicts
 import json
+import os
+# pretty printing. just nice for visualizing big lists/dicts
+from pprint import pprint
 
-from scrape_reddit import *
 from data_processing import *
+from scrape_reddit import *
+
 
 def save_data(data, filename="test_data"):
     with open(filename+".json", "w") as f:
         json.dump(data, f, indent=2)
 
 
-def get_test_data(filename="test_data"):
-    with open("test_data.json", "r") as f:
+def get_test_data(filename):
+    with open(filename+".json", "r") as f:
         comments = json.load(f)
     return comments
 
 def main():
-    # comments = get_comments(subreddit="SuicideWatch")
-    # save_data(comments)
-    comments = get_test_data()
-    get_comments(before=min([i["created_utc"] for i in comments]), subreddit="SuicideWatch")
+    if not os.path.exists("pos_data.json"):
+        pos_comments = get_comments(subreddit="SuicideWatch")
+        neg_comments = get_comments(subreddit="CasualConversation")
+    else:
+        pos_comments = get_test_data("pos_data")
+        neg_comments = get_test_data("neg_data")
+    print("Positive examples:", len(pos_comments), "Negative examples:", len(neg_comments))
 
-    test = format_comments(comments)
-    print(test)
+    p = format_comments(pos_comments)
+    n = format_comments(neg_comments)
+
 
 
 if __name__ == "__main__":
