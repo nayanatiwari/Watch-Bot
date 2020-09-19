@@ -62,14 +62,27 @@ class OurModel():
             x = Dense(1)(x)
             self.model = Model(inpt, x)
         
-        elif name == "v2":
+        elif name == "bigdense":
+            inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
+            x = Embedding(self.hash_buckets, 128)(inpt)
+            x = Dense(256)(x)
+            x = ReLU()(x)
+            x = Dense(128)
+            x = ReLU()(x)
+            x = Dense(32)
+            x = ReLU()(x)
+            x = Dense(1)(x)
+
+            self.model = Model(inpt, x)
+
+        elif name == "conv":
             inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
             x = Embedding(self.hash_buckets, 16)(inpt)
             x = Conv1D(32, 7, padding="valid")(x)
             x = ReLU()(x)
             x = MaxPool1D(8)(x)
             x = Conv1D(32, 7, padding="valid")(x)
-            print(x.shape)
+
             self.model = Model(inpt, x)
 
         else:

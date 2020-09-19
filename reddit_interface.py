@@ -95,7 +95,6 @@ def _pushshift_request_full(q = None, ids = None, size = None, fields = None, so
         
     url = url[:-1] # Get rid of last &
 
-
     # Use url to get dictionary of info
     return _get_jsonparsed_data(url)
 
@@ -162,7 +161,6 @@ def format_comments(data):
     # lowercaseify
     bodies = [i.lower() for i in bodies]
     return bodies
-
 
 
 def get_user_posts(username):
