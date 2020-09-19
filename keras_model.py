@@ -45,16 +45,18 @@ class OurModel():
             optimizer=Adam(0.001)
         )
 
+        self.model.summary()
+
     def run(self, confidence=0.3):
         """
         the range (confidence, 1-confidence) will be treated as "uncertain results"
         """
         # manual validation split
         split = round(self.data_len * 0.3)
-        x = self.hashed_words[split:]
-        y = self.target_labels[split:]
-        valx = self.hashed_words[:split]
-        valy = self.target_labels[:split]
+        x = self.hashed_words[-split:]
+        y = self.target_labels[-split:]
+        valx = self.hashed_words[:-split]
+        valy = self.target_labels[:-split]
 
         # callbacks
         callbacks = [
@@ -85,10 +87,15 @@ class OurModel():
             correct_neg = 1 - targets[predicts < confidence]
             correct_pos = targets[predicts > (1-confidence)]
             correct = np.sum(correct_pos) + np.sum(correct_neg)
-            uncertain = np.sum((predicts >= confidence) <= (1-confidence))
+            uncertain = np.sum(
+                np.logical_and(
+                    (predicts >= confidence),
+                    (predicts <= (1-confidence))
+                )
+            )
             print("\n" + name.title())
-            print(correct, "correct out of", len(inputs))
-            print(correct/len(inputs))
+            print(correct, "correct out of", len(targets))
+            print(correct/len(targets))
             print(uncertain, "uncertain")
 
         calc_correct(x, y, name="training set")

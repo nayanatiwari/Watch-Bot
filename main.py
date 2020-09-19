@@ -9,8 +9,8 @@ from scrape_reddit import *
 from keras_model import *
 from data_gathering import *
 
-np.random.seed(0)
-tf.random.set_seed(0)
+# np.random.seed(0)
+# tf.random.set_seed(0)
 
 
 parser = argparse.ArgumentParser()
