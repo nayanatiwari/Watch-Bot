@@ -1,21 +1,17 @@
 import tfidf
 import copy
 import random
+import data_util
 from sklearn.naive_bayes import MultinomialNB
 
 # 1 == suicidal
 # 0 == not
 S_FNAME = "/data/suicidal_data.txt"
 N_FNAME = "/data/suicidal_data.txt"
-train_test_split = .5  # proportion of data used for training
+T_T_SPLIT = .5  # proportion of data used for training
 
 def get_data_as_list_of_documents():
-    with open(suicidal_fname, 'r') as f:
-        suicidal_docs = f.readlines()
-
-    with open(not_fname, 'r') as f:
-        not_docs = f.readlines()
-    
+    suicidal_docs, not_docs = data_util.get_data_from_directory() 
     return suicidal_docs, not_docs
 
 def split_docs_train_test(docs, train_test_split):
@@ -25,14 +21,13 @@ def split_docs_train_test(docs, train_test_split):
     train_docs = []
 
     # remove train_count docs from docs_copy and add them to train_docs
-    for i in train_count:
-        train_docs.append(docs_copy.pop(random.randrage(len(docs_copy))))
+    for i in range(train_count):
+        train_docs.append(docs_copy.pop(random.randrange(len(docs_copy))))
     
     return train_docs, docs_copy
 
 def get_split_data(suicidal_fname, not_fname, train_test_split):
-    suicidal_docs, not_docs = get_data_as_list_of_documents(suicidal_fname, 
-                                                            not_fname)
+    suicidal_docs, not_docs = get_data_as_list_of_documents()
     train_suicidal_docs, test_suicidal_docs =\
                                 split_docs_train_test(suicidal_docs,
                                                     train_test_split)
@@ -44,21 +39,23 @@ def get_split_data(suicidal_fname, not_fname, train_test_split):
     return train_suicidal_docs, train_not_docs, test_suicidal_docs, test_not_docs
 
 def get_data_labels(tr_s_d, tr_n_d, te_s_d, te_n_d):
-    train_labels = [1 for _ in len(tr_s_d)] + [0 for _ in len(tr_n_d)]
-    test_labels = [1 for _ in len(te_s_d)] + [0 for _ in len(te_n_d)]
+    train_labels = [1 for _ in range(len(tr_s_d))] + [0 for _ in range(len(tr_n_d))]
+    test_labels = [1 for _ in range(len(te_s_d))] + [0 for _ in range(len(te_n_d))]
 
     return train_labels, test_labels
     
 def generate_naive_bayes_model(train_data, train_labels):
   
-    vectorized_train_data = tfidf.generate_tfidf_matrix(train_data)
+    vectorized_train_data, tfidf_vect = tfidf.generate_tfidf_matrix(train_data)
+    print("Train data dims: {0}".format(vectorized_train_data.shape))
     nb_model = MultinomialNB()
     nb_model.fit(vectorized_train_data, train_labels)
-    return nb_model
+    return nb_model, tfidf_vect
 
-def predict_based_on_model(model, test_data):
-    vectorised_test_data = tfidf.generate_tfidf_matrix(test_data)
-    predicted = model.predict(vectorised_test_data)
+def predict_based_on_model(model, test_data, tfidf_vect):
+    vectorized_test_data, tfidf_vect = tfidf.generate_tfidf_matrix(test_data, test=True, tfidf_vect=tfidf_vect)
+    print("Test data dims: {0}".format(vectorized_test_data.shape))
+    predicted = model.predict(vectorized_test_data)
     return predicted
 
 if __name__ == "__main__":
@@ -67,8 +64,9 @@ if __name__ == "__main__":
     train_data = tr_s_d + tr_n_d
     test_data = te_s_d + te_n_d
 
-    nb_model = generate_naive_bayes_model(train_data, train_labels)
-    predicted_test_labels = predict_based_on_model(nb_model, test_data)
+    # using count_vect to keep track of shape of trained model
+    nb_model, tfidf_vect = generate_naive_bayes_model(train_data, train_labels)
+    predicted_test_labels = predict_based_on_model(nb_model, test_data, tfidf_vect)
 
     sum_correct = 0
     for i, label in enumerate(predicted_test_labels):
