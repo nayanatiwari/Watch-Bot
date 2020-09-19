@@ -1,4 +1,4 @@
-from scrape_reddit import *
+from reddit_interface import *
 
 
 def format_comments(data):

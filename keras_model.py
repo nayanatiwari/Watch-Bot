@@ -1,15 +1,16 @@
 import keras
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
 from keras import Model
+from keras import backend as K
 from keras.activations import relu
-from keras.layers import LSTM, Activation, Dense, Embedding, Input
-from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
-
-print("Tensorflow version", tf.__version__)
-print("Keras version", keras.__version__)
+from keras.layers import (LSTM, Activation, Add, BatchNormalization,
+                          Concatenate, Conv1D, Dense, Dropout, Embedding,
+                          Flatten, GlobalAvgPool1D, GlobalMaxPool1D, Input,
+                          Lambda, MaxPool1D, ReLU, Reshape, UpSampling1D,
+                          ZeroPadding1D)
+from keras.optimizers import Adam
 
 
 class OurModel():
@@ -28,17 +29,9 @@ class OurModel():
         # Preprocess the input strings.
         self.hash_buckets = 10_000
         self.hashed_words = self.make_hash_words(sentences)
-
-        # Build the Keras model.
-        inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
-        x = Embedding(self.hash_buckets, 16)(inpt)
-        x = LSTM(32, use_bias=False)(x)
-        x = Dense(32)(x)
-        x = Activation(relu)(x)
-        x = Dense(1)(x)
-
-        self.model = Model(inpt, x)
         
+        self.make_model()
+
         self.model.compile(
             loss='binary_crossentropy', 
             optimizer=Adam(0.001)
@@ -56,6 +49,34 @@ class OurModel():
     def make_hash_words(self, sentences):
         words = tf.strings.split(sentences, ' ')
         return tf.strings.to_hash_bucket_fast(words, self.hash_buckets)
+
+    def make_model(self):
+        name = self.args.modelname
+
+        if name == "original":
+            inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
+            x = Embedding(self.hash_buckets, 16)(inpt)
+            x = LSTM(32, use_bias=False)(x)
+            x = Dense(32)(x)
+            x = Activation(relu)(x)
+            x = Dense(1)(x)
+            self.model = Model(inpt, x)
+        
+        elif name == "v2":
+            inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
+            x = Embedding(self.hash_buckets, 16)(inpt)
+            x = Conv1D(32, 7, padding="valid")(x)
+            x = ReLU()(x)
+            x = MaxPool1D(8)(x)
+            x = Conv1D(32, 7, padding="valid")(x)
+            print(x.shape)
+            self.model = Model(inpt, x)
+
+        else:
+            raise ValueError("No model found named '" + str(name) + "'")
+    
+        self.model # to check it is defined now
+
 
     def train(self):
         """
@@ -102,6 +123,3 @@ class OurModel():
         print(correct, "correct out of", len(targets))
         print(correct/len(targets))
         print(uncertain, "uncertain")
-
-
-
