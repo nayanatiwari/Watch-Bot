@@ -78,7 +78,7 @@ if not args.test:
     model.train()
 
 rest_len = len(data_rest)
-data_rest = model.make_hash_words(data_rest)
+data_rest = make_hash_words(data_rest)
 
 
 def run_tests(model):
