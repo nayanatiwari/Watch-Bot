@@ -18,6 +18,7 @@ parser.add_argument("--name",required=True,type=str,help="name to save this mode
 parser.add_argument("--datasize",type=int,default=10_000,help="numbers of examples for each class to use")
 parser.add_argument("--epochs",type=int,default=200)
 parser.add_argument("--batchsize",type=int,default=128)
+parser.add_argument("--test",action="store_true",default=False,help="only test model")
 args = parser.parse_args()
 
 
@@ -68,6 +69,7 @@ print(len(d), "unique words")
 ### Run Model
 
 model = OurModel(sdata, slabels, args=args)
-model.run()
-
+if not args.test:
+    model.train()
+model.test(name=args.name)
 

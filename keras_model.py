@@ -47,17 +47,17 @@ class OurModel():
 
         self.model.summary()
 
-    def run(self, confidence=0.3):
+        # manual validation split
+        split = round(self.data_len * 0.3)
+        self.x = self.hashed_words[-split:]
+        self.y = self.target_labels[-split:]
+        self.valx = self.hashed_words[:-split]
+        self.valy = self.target_labels[:-split]
+
+    def train(self):
         """
         the range (confidence, 1-confidence) will be treated as "uncertain results"
         """
-        # manual validation split
-        split = round(self.data_len * 0.3)
-        x = self.hashed_words[-split:]
-        y = self.target_labels[-split:]
-        valx = self.hashed_words[:-split]
-        valy = self.target_labels[:-split]
-
         # callbacks
         callbacks = [
             ModelCheckpoint("models/test.hdf5", verbose=1, save_best_only=True, save_freq="epoch"),
@@ -67,9 +67,9 @@ class OurModel():
         # fitting
         try:
             self.model.fit(
-                x=x,
-                y=y,
-                validation_data=(valx,valy),
+                x=self.x,
+                y=self.y,
+                validation_data=(self.valx, self.valy),
                 epochs=self.args.epochs,
                 batch_size=self.args.batchsize,
                 validation_batch_size=self.args.batchsize,
@@ -78,6 +78,15 @@ class OurModel():
             )
         except KeyboardInterrupt:
             print("\nManual early stop...")
+
+
+    def test(self, load_best=True, name=None, confidence=0.3):
+        if load_best:
+            if name is None:
+                raise ValueError("No name provided to test")
+            modelname = "models/" + name + ".hdf5"
+            print("Loading best model '{}'...".format(modelname))
+            self.model = keras.models.load_model(modelname)
 
         # evaluating
         def calc_correct(inputs, targets, name):
@@ -98,8 +107,8 @@ class OurModel():
             print(correct/len(targets))
             print(uncertain, "uncertain")
 
-        calc_correct(x, y, name="training set")
-        calc_correct(valx, valy, name="validation set")
+        calc_correct(self.x, self.y, name="training set")
+        calc_correct(self.valx, self.valy, name="validation set")
         calc_correct(self.hashed_words, self.target_labels, name="combined")
 
 
