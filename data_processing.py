@@ -8,7 +8,7 @@ def format_comments(comments_dict):
     """
     bad_bodies = (
         "[removed]", 
-        "[deleted]"
+        "[deleted]",
     )
     bad_phrases = (
         "I am a bot, and this action was performed automatically",
