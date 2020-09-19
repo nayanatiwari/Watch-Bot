@@ -1,11 +1,10 @@
 import os
-# pretty printing. just nice for visualizing big lists/dicts
 from pprint import pprint
 import numpy as np
 import argparse
+import re
 
-from data_processing import *
-from scrape_reddit import *
+from reddit_interface import *
 from keras_model import *
 from data_gathering import *
 
@@ -19,6 +18,7 @@ parser.add_argument("--datasize",type=int,default=10_000,help="numbers of exampl
 parser.add_argument("--epochs",type=int,default=200)
 parser.add_argument("--batchsize",type=int,default=128)
 parser.add_argument("--test",action="store_true",default=False,help="only test model")
+parser.add_argument("--modelname",default="original")
 args = parser.parse_args()
 
 
@@ -73,13 +73,12 @@ print(len(d), "unique words")
 
 ### Run Model
 
-
 model = OurModel(sdata, slabels, args=args)
 if not args.test:
     model.train()
 
 rest_len = len(data_rest)
-data_rest = model.make_hash_words(data_rest)
+data_rest = make_hash_words(data_rest)
 
 
 def run_tests(model):
