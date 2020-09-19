@@ -19,10 +19,12 @@ def generate_tfidf_matrix(data_set):
     column_headers = create_column_headers(data_set)
     tfidf_wm = tfidfvectorizer.fit_transform(train)
     tfidf_tokens = tfidfvectorizer.get_feature_names()
+
+    # this datafram for printing
     df_tfidfvect = pd.DataFrame(data = tfidf_wm.toarray(), index = column_headers,
                             columns = tfidf_tokens)
 
-    return df_tfidfvect
+    return tfidf_wm
 
 
 if __name__ == "__main__":
