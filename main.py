@@ -15,8 +15,9 @@ tf.random.set_seed(0)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--name",required=True,type=str,help="name to save this model under")
-parser.add_argument("--minidata",action="store_true",default=False,help="use mini dataset (500 examples each)")
+parser.add_argument("--datasize",type=int,default=10_000,help="numbers of examples for each class to use")
 parser.add_argument("--epochs",type=int,default=200)
+parser.add_argument("--batchsize",type=int,default=128)
 args = parser.parse_args()
 
 
@@ -36,17 +37,17 @@ else:
 
 print("Positive examples:", len(pos_examples), "Negative examples:", len(neg_examples))
 
+
+p = pos_examples[:args.datasize]
+n = neg_examples[:args.datasize]
+
 # trim to 1000 words max, remove words with numbers
-p = [i.split()[:1000] for i in pos_examples]
-n = [i.split()[:1000] for i in neg_examples]
+p = [i.split()[:1000] for i in p]
+n = [i.split()[:1000] for i in n]
 p = [[j for j in i if not re.match(r"[0-9]", j)] for i in p]
 n = [[j for j in i if not re.match(r"[0-9]", j)] for i in n]
 p = [" ".join(i) for i in p]
 n = [" ".join(i) for i in n]
-
-if args.minidata:
-    p = p[:500]
-    n = n[:500]
 
 # combine and shuffle
 data = np.array(p + n)
@@ -57,6 +58,12 @@ np.random.shuffle(indices)
 slabels = labels[indices]
 sdata = data[indices]
 
+# calculate number of words
+d = {}
+for i in p+n:
+    for j in i.split():
+        d[j] = 0
+print(len(d), "unique words")
 
 ### Run Model
 

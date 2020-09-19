@@ -26,7 +26,7 @@ class OurModel():
         self.args = args
 
         # Preprocess the input strings.
-        hash_buckets = 1000
+        hash_buckets = 10_000
         words = tf.strings.split(sentences, ' ')
         self.hashed_words = tf.strings.to_hash_bucket_fast(words, hash_buckets)
 
@@ -56,8 +56,6 @@ class OurModel():
         valx = self.hashed_words[:split]
         valy = self.target_labels[:split]
 
-        batchsize = 16
-
         # callbacks
         callbacks = [
             ModelCheckpoint("models/test.hdf5", verbose=1, save_best_only=True, save_freq="epoch"),
@@ -71,8 +69,8 @@ class OurModel():
                 y=y,
                 validation_data=(valx,valy),
                 epochs=self.args.epochs,
-                batch_size=batchsize,
-                validation_batch_size=batchsize,
+                batch_size=self.args.batchsize,
+                validation_batch_size=self.args.batchsize,
                 verbose=1,
                 callbacks=callbacks,
             )
