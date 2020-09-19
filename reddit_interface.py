@@ -7,8 +7,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-
-
 def _get_jsonparsed_data(url):
     """
     Receive the content of ``url``, parse it as JSON and return the object.
