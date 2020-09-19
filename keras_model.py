@@ -26,13 +26,12 @@ class OurModel():
         self.args = args
 
         # Preprocess the input strings.
-        hash_buckets = 10_000
-        words = tf.strings.split(sentences, ' ')
-        self.hashed_words = tf.strings.to_hash_bucket_fast(words, hash_buckets)
+        self.hash_buckets = 10_000
+        self.hashed_words = self.make_hash_words(sentences)
 
         # Build the Keras model.
         inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
-        x = Embedding(hash_buckets, 16)(inpt)
+        x = Embedding(self.hash_buckets, 16)(inpt)
         x = LSTM(32, use_bias=False)(x)
         x = Dense(32)(x)
         x = Activation(relu)(x)
@@ -54,13 +53,17 @@ class OurModel():
         self.valx = self.hashed_words[:-split]
         self.valy = self.target_labels[:-split]
 
+    def make_hash_words(self, sentences):
+        words = tf.strings.split(sentences, ' ')
+        return tf.strings.to_hash_bucket_fast(words, self.hash_buckets)
+
     def train(self):
         """
         the range (confidence, 1-confidence) will be treated as "uncertain results"
         """
         # callbacks
         callbacks = [
-            ModelCheckpoint("models/test.hdf5", verbose=1, save_best_only=True, save_freq="epoch"),
+            ModelCheckpoint("models/" + self.args.name + "_best_val_loss.hdf5", verbose=1, save_best_only=True, save_freq="epoch"),
             ReduceLROnPlateau(patience=self.args.epochs//5)
         ]
 
@@ -78,37 +81,27 @@ class OurModel():
             )
         except KeyboardInterrupt:
             print("\nManual early stop...")
+        
+        self.model.save("models/" + self.args.name + "_final.hdf5")
 
 
-    def test(self, load_best=True, name=None, confidence=0.3):
-        if load_best:
-            if name is None:
-                raise ValueError("No name provided to test")
-            modelname = "models/" + name + ".hdf5"
-            print("Loading best model '{}'...".format(modelname))
-            self.model = keras.models.load_model(modelname)
+    def test(self, inputs, targets, name, confidence=0.3):
+        predicts = np.squeeze(self.model.predict(inputs))
+        targets = K.eval(targets)
 
-        # evaluating
-        def calc_correct(inputs, targets, name):
-            predicts = np.squeeze(self.model.predict(inputs))
-            targets = K.eval(targets)
-
-            correct_neg = 1 - targets[predicts < confidence]
-            correct_pos = targets[predicts > (1-confidence)]
-            correct = np.sum(correct_pos) + np.sum(correct_neg)
-            uncertain = np.sum(
-                np.logical_and(
-                    (predicts >= confidence),
-                    (predicts <= (1-confidence))
-                )
+        correct_neg = 1 - targets[predicts < confidence]
+        correct_pos = targets[predicts > (1-confidence)]
+        correct = np.sum(correct_pos) + np.sum(correct_neg)
+        uncertain = np.sum(
+            np.logical_and(
+                (predicts >= confidence),
+                (predicts <= (1-confidence))
             )
-            print("\n" + name.title())
-            print(correct, "correct out of", len(targets))
-            print(correct/len(targets))
-            print(uncertain, "uncertain")
+        )
+        print("\n" + name.title())
+        print(correct, "correct out of", len(targets))
+        print(correct/len(targets))
+        print(uncertain, "uncertain")
 
-        calc_correct(self.x, self.y, name="training set")
-        calc_correct(self.valx, self.valy, name="validation set")
-        calc_correct(self.hashed_words, self.target_labels, name="combined")
 
 

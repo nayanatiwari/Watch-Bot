@@ -26,21 +26,18 @@ args = parser.parse_args()
 
 # positive
 if not os.path.exists("data/pos_data.json"):
-    pos_examples = request_format_save(size=10000, pos=True)
+    p = request_format_save(size=10000, pos=True)
 else:
-    pos_examples = load_json_data("pos_data")
+    p = load_json_data("pos_data")
 
 # negative
 if not os.path.exists("data/neg_data.json"):
-    neg_examples = request_format_save(size=10000, pos=False)
+    n = request_format_save(size=10000, pos=False)
 else:
-    neg_examples = load_json_data("neg_data")
+    n = load_json_data("neg_data")
 
-print("Positive examples:", len(pos_examples), "Negative examples:", len(neg_examples))
+print("Positive examples:", len(p), "Negative examples:", len(n))
 
-
-p = pos_examples[:args.datasize]
-n = neg_examples[:args.datasize]
 
 # trim to 1000 words max, remove words with numbers
 p = [i.split()[:1000] for i in p]
@@ -50,9 +47,17 @@ n = [[j for j in i if not re.match(r"[0-9]", j)] for i in n]
 p = [" ".join(i) for i in p]
 n = [" ".join(i) for i in n]
 
+p_rest = p[args.datasize:]
+n_rest = n[args.datasize:]
+p = p[:args.datasize]
+n = n[:args.datasize]
+
 # combine and shuffle
 data = np.array(p + n)
 labels = np.array([1 for i in p] + [0 for i in n])
+
+data_rest = np.array(p_rest + n_rest)
+labels_rest = np.array([1 for i in p_rest] + [0 for i in n_rest])
 
 indices = np.arange(len(data))
 np.random.shuffle(indices)
@@ -68,8 +73,30 @@ print(len(d), "unique words")
 
 ### Run Model
 
+
 model = OurModel(sdata, slabels, args=args)
 if not args.test:
     model.train()
-model.test(name=args.name)
+
+rest_len = len(data_rest)
+data_rest = model.make_hash_words(data_rest)
+
+
+def run_tests(model):
+    model.test(model.x, model.y, name="training set")
+    model.test(model.valx, model.valy, name="validation set")
+    if rest_len > 0:
+        model.test(data_rest, labels_rest, "rest set (" + str(rest_len) + " unseen examples)")
+    else:
+        print("No rest set")
+
+print("\n--- Final Model ---")
+modelname = "models/" + args.name + "_final.hdf5"
+model.model = keras.models.load_model(modelname)
+run_tests(model)
+
+print("\n--- Best Validation Loss Model ---")
+modelname = "models/" + args.name + "_best_val_loss.hdf5"
+model.model = keras.models.load_model(modelname)
+run_tests(model)
 
