@@ -9,16 +9,20 @@ def reply_to_enrollment_message(message, users):
  via [Suicide Prevention Resource Center]( http://www.sprc.org/).\n\nIf you are interested in our service\
  please reply with the reddit username of someone who can be contacted if you post something determined to have suicidal\
  sentiment.\n\nFor your message, type Contact: [reddit username],[reddit username],[reddit username] with no\
- spaces between the commas!"
-    new_user = User(message.author, message.name)
+ spaces between the commas!\n\n You can opt-out at any time by sending us a message with LEAVE in it."
+    new_user = User(message.author)
     users.update({new_user.redditor:new_user})
     message.mark_read()
     message.reply(enrollment_reply_message)
 
 def check_for_enrollment_message(message, users):
     subject_line_options = ["enroll in watch-bot", "enroll in watchbot", "enroll"]
-    if message.subreddit is None and message.subject.lower().strip() in subject_line_options \
-        and message.author not in users:
+    subject = message.subject.lower().strip()
+    valid_subject = False
+    for option in subject_line_options:
+        if option in subject:
+            valid_subject = True
+    if message.subreddit is None and valid_subject and message.author not in users:
             return True
     return False
 
@@ -40,6 +44,8 @@ are no additional steps at this time. Thank you!"
 send a message only containing the following with the number of reddit contacts you prefer \
 (no spaces between usernames please!)- Contact: [reddit username],[reddit username],[reddit username]"
     default_reply_message = "Hmmm I don't understand what you said. " + enrolled_status_message
+    message.mark_read()
+    message.reply(default_reply_message)
 
 
 def reply_to_contact_info_message(message, users, contacts, reddit):
@@ -81,14 +87,40 @@ def validate_contacts(reddit, contacts):
     return True
 
 def check_for_contact_info_message(message, users):
-    if message.author in users and (message.first_message_name
-        in users[message.author].previous_messages) \
-        and "contact: " in message.body.lower():
+    if message.author in users and "contact: " in message.body.lower():
         return True
     return False
 
+def check_for_leave_message(message, users):
+    if "leave" in message.body.lower() and message.author in users:
+        return True
+    return False
+
+def reply_to_leave_message(message, users):
+    users.pop(message.author)
+    message.mark_read()
+    leave_reply_message = "You have successfully opted out of the Watch-Bot service, \
+If you are having any suicidal thoughts please call this crisis line:  1-800-273-8255 \
+or [chat](http://chat.suicidepreventionlifeline.org/GetHelp/LifelineChat.aspx) \
+via [Suicide Prevention Resource Center]( http://www.sprc.org/).\n\nYou can opt-in again \
+at anytime. Thank you and we wish you the best!"
+    message.reply(leave_reply_message)
+
+def notify_contacts(redditor, users, reddit):
+    contacts = users[redditor].contacts
+    for contact in contacts:
+        message = create_notification_message(contact, redditor)
+        reddit.redditor(contact).message('WARNING: {0} Suicidal Post Flag'.format(redditor), message)
+
+def create_notification_message(contact, redditor):
+    return "Hi {0}, this is Watch-Bot, a service your friend {1} to monitor their posts \
+for suicidal sentiment. We have flagged a recent post of theirs. Please check in with \
+them and any of their close friends and family. If you are unsure what to do, please refer to \
+[Suicide Prevention Resource Center]( http://www.sprc.org/). Thank you for your help".format(contact, redditor)
+
 def start_logging():
-    #from PRAW documentation - not original content"
+    #from PRAW documentation - not original content
+    #used for debugging
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
     for logger_name in ("praw", "prawcore"):
@@ -102,6 +134,8 @@ def check_unread_messages(reddit, users):
             reply_to_enrollment_message(message, users)
         elif check_for_contact_info_message(message, users):
             iterate_contact_info_message(message, users, reddit)
+        elif check_for_leave_message(message, users):
+            reply_to_leave_message(message, users)
         else:
             default_reply(message, users)
 
