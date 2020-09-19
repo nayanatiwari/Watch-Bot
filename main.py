@@ -1,8 +1,8 @@
 import os
-# pretty printing. just nice for visualizing big lists/dicts
 from pprint import pprint
 import numpy as np
 import argparse
+import re
 
 from data_processing import *
 from reddit_interface import *

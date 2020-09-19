@@ -2,7 +2,8 @@ import json
 import os
 import time
 
-from data_processing import *
+from reddit_interface import *
+
 
 def save_json_data(data, filename):
     with open("data/"+filename+".json", "w") as f:
