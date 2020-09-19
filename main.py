@@ -20,7 +20,9 @@ def get_test_data(filename):
 def main():
     if not os.path.exists("pos_data.json"):
         pos_comments = get_comments(subreddit="SuicideWatch")
+        save_data(pos_comments, "pos_data")
         neg_comments = get_comments(subreddit="CasualConversation")
+        save_data(neg_comments, "neg_data")
     else:
         pos_comments = get_test_data("pos_data")
         neg_comments = get_test_data("neg_data")
