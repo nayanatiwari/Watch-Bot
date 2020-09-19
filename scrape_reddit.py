@@ -65,7 +65,7 @@ def pushshift_comment(q = None, ids = None, size = None, fields = None, sort = N
             value = "\"" + value + "\""
 
         # make sure ints are ints
-        if key in ["before","after"]:
+        if key in ["size"]:
             value = int(value)
 
         # Format lists as csv
@@ -107,7 +107,7 @@ def get_comments(term=None, before=None, after=None, subreddit=None):
     sort = "desc"
     sort_type = "created_utc"
     fields = "created_utc,body"
-    size = 500
+    size = 100
 
     data = pushshift_comment(q = term, before = before, after = after,\
         subreddit = subreddit, sort = sort, sort_type = sort_type, 
