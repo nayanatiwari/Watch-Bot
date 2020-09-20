@@ -89,7 +89,8 @@ class OurModel():
             x = MaxPool1D(2)(x)
             x = Conv1D(64, 7, padding="valid")(x)
             x = MaxPool1D(2)(x)
-            x = Conv1D(32, 5, padding="valid")(x)
+            x = Conv1D(16, 5, padding="valid")(x)
+            x = GlobalMaxPool1D()(x)
             x = Dense(1)(x)
 
             self.model = Model(inpt, x)
@@ -145,9 +146,6 @@ class OurModel():
         """
         predicts = np.squeeze(self.model.predict(inputs))
         targets = K.eval(targets)
-
-        print(predicts.shape)
-        print(targets.shape)
 
         correct_neg = 1 - targets[predicts < confidence]
         correct_pos = targets[predicts > (1-confidence)]
