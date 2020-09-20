@@ -36,8 +36,8 @@ def iterate_contact_info_message(message, users, reddit):
 
 def default_reply(message, users):
     if message.author in users and users[message.author].finished_enrolling:
-        enrolled_status_message = "You are already enrolled in the Watch-Bot service. There\
-are no additional steps at this time. Thank you!"
+        enrolled_status_message = "You are already enrolled in the Watch-Bot service. There \
+are no additional steps at this time. Opt-out by messaging us \"LEAVE\". Thank you!"
     else:
         enrolled_status_message = "You have not completed your enrollment. If you are trying to add contacts \
 send a message only containing the following with the number of reddit contacts you prefer \
@@ -61,7 +61,7 @@ message again."
         message.mark_read()
         contact_info_reply_message = "Thank you for submitting your contact information! If a suicidal post \
 is detected the users " + print_contacts(contacts) + " will be contacted via private message. You are officially \
-enrolled in Watch-Bot. We look forward to helping you on your mental health journey :)"
+enrolled in Watch-Bot. Opt-out at anytime by messaging us \"LEAVE\". We look forward to helping you on your mental health journey :)"
         message.reply(contact_info_reply_message)
 
 def print_contacts(contacts):
