@@ -1,6 +1,7 @@
 import praw
 import logging
 from user import User
+PREDICTION_MODEL = "naivebayes"
 
 def upload_users_database(users):
     fp = open("users_database.txt", "r")
@@ -50,7 +51,7 @@ def delete_user_from_database(redditor):
     for line in write_lines:
         fp.write(line)
     fp.close()
-           
+            
 def reply_to_enrollment_message(message, users):
     enrollment_reply_message = "Thank you for reaching out to Watch-Bot! If you are having suicidal thoughts please\
  call this crisis line:  1-800-273-8255 or [chat](http://chat.suicidepreventionlifeline.org/GetHelp/LifelineChat.aspx)\
@@ -195,6 +196,20 @@ def check_unread_messages(reddit, users):
         else:
             default_reply(message, users)
 
+def check_user_posts(reddit, users):
+    for user in users:
+        post_data = reddit_interface.get_user_posts(user)
+
+        if post_data == []:
+            return 0
+
+        # combine posts into one long string to treat as single doc
+        post_data_one_doc = " ".join(post_data)
+        prediction = get_prediction(PREDICTION_MODEL, documents=[post_dat_one_doc]) 
+        
+        if prediction[0] == 1:
+            notify_contacts(users[user].redditor, users, reddit) 
+    
 def main():
     reddit = praw.Reddit('Watch-Bot')
     users = {}
@@ -203,6 +218,7 @@ def main():
         print(user)
     while 1:
         check_unread_messages(reddit, users)
+        check_user_posts(reddit, users)
 
 if __name__ == "__main__":
     main()

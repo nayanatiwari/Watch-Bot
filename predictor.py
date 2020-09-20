@@ -9,6 +9,32 @@ model stored in models/ .
 
 if you want to generate a model, look at the file generate_model
 """
+"""
+available models for get_prediction(model_text...
+
+naivebayes
+"""
+
+MODEL_DIR = "models/"
+MODEL_SUFF = ".model"
+
+def get_prediction(model_text, documents=[], data_fname=""):
+    model_file = MODEL_DIR + model_text + MODEL_SUFF
+    matrix_file = model_file[:-6] + ".matrix"
+    model, matrix = generate_model.load_model_and_matrix(model_file, matrix_file)
+    if documents == [] and data_fname == "":
+        print("No data passed for prediction")
+    elif documents == []:
+        data_fname = "" 
+        while not os.path.isfile("data/" + data_fname  + ".json"):
+            data_fname = input("Enter name of data json file in data/ with no .json suffix: ")
+        
+        documents = get_data_from_jsonfile(data_fname)
+
+    predictions = predict_group(model, documents, matrix)
+
+    return predictions
+
 
 """
 model: scikit-learn model
