@@ -38,6 +38,9 @@ if not os.path.exists("data/neg_data.json"):
 else:
     n = load_json_data("neg_data")
 
+pse = load_json_data("pos_sent_emot")
+nse = load_json_data("neg_sent_emot")
+
 print("Positive examples:", len(p), "Negative examples:", len(n))
 
 
@@ -54,17 +57,25 @@ n_rest = n[args.datasize:]
 p = p[:args.datasize]
 n = n[:args.datasize]
 
+pse_rest = pse[args.datasize:]
+nse_rest = nse[args.datasize:]
+pse = pse[:args.datasize]
+nse = nse[:args.datasize]
+
 # combine and shuffle
 data = np.array(p + n)
+sent_emot = np.array(pse + nse)
 labels = np.array([1 for i in p] + [0 for i in n])
 
 data_rest = np.array(p_rest + n_rest)
+sent_emot = np.array(pse_rest + nse_rest)
 labels_rest = np.array([1 for i in p_rest] + [0 for i in n_rest])
 
 indices = np.arange(len(data))
 np.random.shuffle(indices)
 slabels = labels[indices]
 sdata = data[indices]
+ssent_emot = sent_emot[indices]
 
 # calculate number of words
 d = {}
@@ -75,7 +86,7 @@ print(len(d), "unique words")
 
 ### Run Model
 
-model = OurModel(sdata, slabels, args=args)
+model = OurModel(sdata, slabels, sent_emot=ssent_emot, args=args)
 if not args.test:
     model.train()
 
@@ -87,7 +98,10 @@ def run_tests(model):
     model.test(model.x, model.y, name="training set")
     model.test(model.valx, model.valy, name="validation set")
     if rest_len > 0:
-        model.test(data_rest, labels_rest, "rest set (" + str(rest_len) + " unseen examples)")
+        if model.uses_sentiment:
+            model.test([data_rest, sent_emot], labels_rest, "rest set")
+        else:
+            model.test(data_rest, labels_rest, "rest set")
     else:
         print("No rest set")
 
