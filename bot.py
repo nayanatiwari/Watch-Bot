@@ -1,5 +1,6 @@
 import praw
 import logging
+import reddit_interface
 from user import User
 PREDICTION_MODEL = "naivebayes"
 
@@ -9,7 +10,6 @@ def upload_users_database(users):
     fp.close()
     for line in lines:
         line_list = line.split(",")
-        print(line_list)
         new_user = User(line_list[0])
         new_user.contacts = line_list[1]
         if (line_list[2].strip()) == "True":
@@ -90,7 +90,6 @@ def iterate_contact_info_message(message, users, reddit):
 def default_reply(message, users):
     redditor = str(message.author)
     if redditor in users and users[redditor].finished_enrolling:
-        print(users[redditor].finished_enrolling)
         enrolled_status_message = "You are already enrolled in the Watch-Bot service. There \
 are no additional steps at this time. Opt-out by messaging us \"LEAVE\". Thank you!"
     else:
@@ -198,7 +197,10 @@ def check_unread_messages(reddit, users):
 
 def check_user_posts(reddit, users):
     for user in users:
-        post_data = reddit_interface.get_user_posts(user)
+        try:
+            post_data = reddit_interface.get_user_posts(user)
+        except ValueError:
+            post_data = []
 
         if post_data == []:
             return 0
@@ -214,8 +216,6 @@ def main():
     reddit = praw.Reddit('Watch-Bot')
     users = {}
     upload_users_database(users)
-    for user in users.values():
-        print(user)
     while 1:
         check_unread_messages(reddit, users)
         check_user_posts(reddit, users)
