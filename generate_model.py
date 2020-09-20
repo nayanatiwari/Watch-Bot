@@ -121,8 +121,10 @@ def generate_and_save_combo():
 
     print("Percentage correct for combined models: {0}".format(correct/len(test_labels)))
 
-
 def load_model_and_matrix(model_file, matrix_file):
+    if not os.path.isfile(model_file) or not os.path.isfile(matrix_file):
+        print("no model file")
+        exit()
     model = load(model_file)
     matrix = load(matrix_file)
 
@@ -153,6 +155,7 @@ if __name__ == "__main__":
             generate_and_save_model(model_file, matrix_file)
         else:
             load_model_and_matrix(model_file, matrix_file)
+
             exit()
     else:
         generate_and_save_model(model_file, matrix_file)
