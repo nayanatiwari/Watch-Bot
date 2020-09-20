@@ -7,6 +7,7 @@ from naivebayes import generate_naive_bayes_model
 from gaussianbayes import generate_gaussian_naive_bayes_model
 from complementnaivebayes import generate_complement_naive_bayes_model
 from joblib import dump, load
+from sklearn.metrics import precision_score, recall_score
 
 models = ["models/naivebayes.model", "models/gaussiannaivebayes.model", "models/complementnaivebayes.model" ,"combo"]
 matrices = ["models/naivebayes.matrix", "models/gaussiannaivebayes.matrix", "models/complementnaivebayes.model"]
@@ -79,6 +80,8 @@ def generate_and_save_model(model_file, matrix_file, being_combined=False):
             correct += 1
 
     print("Percentage correct for new model {0}: {1}".format(model_file, correct/len(test_labels)))
+    print("Precision score: {0}: {1}".format(model_file, precision_score(test_labels, predictions)))
+    print("Recall score: {0}: {1}".format(model_file, recall_score(test_labels, predictions)))
 
 def generate_and_save_combo():
     tr_s_d, tr_n_d, te_s_d, te_n_d = get_split_data(T_T_SPLIT)
