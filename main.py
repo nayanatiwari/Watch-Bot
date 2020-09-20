@@ -11,6 +11,8 @@ from data_gathering import *
 # np.random.seed(0)
 # tf.random.set_seed(0)
 
+os.makedirs("models", exist_ok=True)
+os.makedirs("data", exist_ok=True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--name",required=True,type=str,help="name to save this model under")

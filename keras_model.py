@@ -146,6 +146,9 @@ class OurModel():
         predicts = np.squeeze(self.model.predict(inputs))
         targets = K.eval(targets)
 
+        print(predicts.shape)
+        print(targets.shape)
+
         correct_neg = 1 - targets[predicts < confidence]
         correct_pos = targets[predicts > (1-confidence)]
         correct = np.sum(correct_pos) + np.sum(correct_neg)
