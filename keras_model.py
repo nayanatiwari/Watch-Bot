@@ -88,6 +88,17 @@ class OurModel():
 
             self.model = Model(inpt, x)
 
+        elif name == "sentiment":
+            inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
+            inpt2 = Input(shape=[None], dtype=tf.int64, ragged=True)
+            x = Embedding(self.hash_buckets, 16)(inpt)
+            x = Conv1D(32, 7, padding="valid")(x)
+            x = ReLU()(x)
+            x = MaxPool1D(8)(x)
+            x = Conv1D(32, 7, padding="valid")(x)
+
+            self.model = Model(inpt, x)
+
         else:
             raise ValueError("No model found named '" + str(name) + "'")
     
