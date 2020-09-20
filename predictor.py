@@ -1,7 +1,7 @@
 import generate_model
 import os
 import glob
-from data_util import get_data_from_jsonfile
+from src.data_util import get_data_from_jsonfile
 from src import tfidf
 """
 this file contains functions used to compare a document against a pre-existing

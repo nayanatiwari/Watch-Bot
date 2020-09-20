@@ -1,7 +1,7 @@
 from src import tfidf
 import copy
 import random
-import data_util
+import src.data_util
 from sklearn.naive_bayes import MultinomialNB
 
 # 1 == suicidal
