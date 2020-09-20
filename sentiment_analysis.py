@@ -52,7 +52,7 @@ def ibm_request_loop(data):
                 sent, emot = sentiment_score(i)
             except Exception as e:
                 print("Exception:", e)
-                sent, emot = None, None
+                sent, emot = 0.0, {"sadness":0.0, "joy":0.0, "fear":0.0, "disgust":0.0, "anger":0.0}
             sentims.append(sent)
             emotions.append(emot)
     except KeyboardInterrupt:
@@ -67,14 +67,14 @@ args = parser.parse_args()
 if args.pos:
     print("\n\npositive examples")
     p = load_json_data("pos_data")
-    p = p[:2000]
+    p = p[2000:]
     p_sent = ibm_request_loop(p)
     save_json_data(p_sent, "pos_data_sentiment")
 
 else:
     print("\n\nnegative examples")
     n = load_json_data("neg_data")
-    n = n[:2000]
+    n = n[2000:]
     n_sent = ibm_request_loop(n)
     save_json_data(n_sent, "neg_data_sentiment")
 
