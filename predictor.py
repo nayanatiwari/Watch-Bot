@@ -13,13 +13,17 @@ if you want to generate a model, look at the file generate_model
 available models for get_prediction(model_text...
 
 naivebayes
+complementbayes
 gaussiannaivebayes
 """
 
 MODEL_DIR = "models/"
+SUPPORTED_COMBOS = ["naivebayes", "complementnaivebayes"]
 MODEL_SUFF = ".model"
 
-def get_prediction(model_text, documents=[], data_fname=""):
+def get_prediction(model_text, documents=[], data_fname="", probs=False):
+    if model_text == "combo":
+        return get_combine_prediction(documents)
     model_file = MODEL_DIR + model_text + MODEL_SUFF
     matrix_file = model_file[:-6] + ".matrix"
     model, matrix = generate_model.load_model_and_matrix(model_file, matrix_file)
@@ -32,9 +36,41 @@ def get_prediction(model_text, documents=[], data_fname=""):
         
         documents = get_data_from_jsonfile(data_fname)
 
+    if probs:
+
     predictions = predict_group(model, documents, matrix)
 
     return predictions
+
+def predict_probability_doc(model, doc, tfidf_vect):
+    vectorized_doc, tfidf_vect = tfidf.generate_tfidf_matrix([doc], test=True, tfidf_vect=tfidf_vect)
+    try:
+        return model.predict_proba(vectorized_doc)
+    except TypeError:
+        return model.predict_proba(vectorized_doc.toarray())
+
+"""
+only supports single document checks for now
+"""
+def get_combined_prediction(document):
+    prediction_probabilities = []
+
+    for classifier in SUPPORTED_COMBOS:
+        model_file = MODEL_DIR + model_text + MODEL_SUFF
+        matrix_file = model_file[:-6] + ".matrix"
+        model, matrix = generate_model.load_model_and_matrix(model_file, matrix_file)
+        prediction_probabilities.append(prediction_probability_doc(model, document[0], matrix))
+    
+    avg = [0 for _ in range(len(prediction_probabilities))]
+
+    for i in range(len(prediction_probabilites)): 
+        avg[0] += prediction_probabilities[i][0]
+        avg[1] += prediction_probabilities[i][1]
+
+    avg[0] = avg[0] / len(prediction_probabilites)
+    avg[1] = avg[1] / len(prediction_probabilites)
+
+    return 0 if avg[0] >= avg[1] else 1
 
 """
 model: scikit-learn model
@@ -58,13 +94,6 @@ def predict_individual_doc(model, doc, tfidf_vect):
         return model.predict(vectorized_doc)
     except TypeError:
         return model.predict(vectorized_doc.toarray())
-
-def predict_probability_doc(model, doc, tfidf_vect):
-    vectorized_doc, tfidf_vect = tfidf.generate_tfidf_matrix([doc], test=True, tfidf_vect=tfidf_vect)
-    try:
-        return model.predict_proba(vectorized_doc)
-    except TypeError:
-        return model.predict_proba(vectorized_doc.toarray())
 
 if __name__ == "__main__":
     print("WatchDog Predictor")
