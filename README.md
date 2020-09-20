@@ -21,3 +21,11 @@ Multinomial Naive Bayesian classification.
 
 ### Generating models
   `python3 generate_model.py` will walk you through generating an available non-nueral-net model. It will also output the models results against test data.
+  
+## Running Watch-Bot
+To run Watch-Bot, you'll need reddit api credentials in a file named `praw.ini` in your the base directory of this repository.
+
+
+# Structural Future Changes
+The different python files for the models are an un-needed leftover of hacking this together. They could easily be abstracted to a single object initialized 
+based on desired model. The neural-net models could also be attached to the same interface.
