@@ -59,6 +59,13 @@ def predict_individual_doc(model, doc, tfidf_vect):
     except TypeError:
         return model.predict(vectorized_doc.toarray())
 
+def predict_probability_doc(model, doc, tfidf_vect):
+    vectorized_doc, tfidf_vect = tfidf.generate_tfidf_matrix([doc], test=True, tfidf_vect=tfidf_vect)
+    try:
+        return model.predict_proba(vectorized_doc)
+    except TypeError:
+        return model.predict_proba(vectorized_doc.toarray())
+
 if __name__ == "__main__":
     print("WatchDog Predictor")
     models = glob.glob("models/*.model")

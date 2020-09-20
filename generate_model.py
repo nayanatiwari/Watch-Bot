@@ -5,10 +5,11 @@ import random
 import predictor
 from naivebayes import generate_naive_bayes_model
 from gaussianbayes import generate_gaussian_naive_bayes_model
+from complementnaivebayes import generate_complement_naive_bayes_model
 from joblib import dump, load
 
-models = ["models/naivebayes.model", "models/gaussiannaivebayes.model"]
-matrices = ["models/naivebayes.matrix", "models/gaussiannaivebayes.matrix"]
+models = ["models/naivebayes.model", "models/gaussiannaivebayes.model", "models/complementnaivebayes.model" ,"combo"]
+matrices = ["models/naivebayes.matrix", "models/gaussiannaivebayes.matrix", "models/complementnaivebayes.model"]
 
 T_T_SPLIT = .5  # proportion of data used for training
 
@@ -46,7 +47,7 @@ def get_data_labels(tr_s_d, tr_n_d, te_s_d, te_n_d):
 
     return train_labels, test_labels
 
-def generate_and_save_model(model_file, matrix_file):
+def generate_and_save_model(model_file, matrix_file, being_combined=False):
 
     classifier_to_use = os.path.basename(model_file).split(".")[0]
     tr_s_d, tr_n_d, te_s_d, te_n_d = get_split_data(T_T_SPLIT)
@@ -56,26 +57,69 @@ def generate_and_save_model(model_file, matrix_file):
 
     if classifier_to_use == "naivebayes":
         nb_model, tfidf_vect  = generate_naive_bayes_model(train_data, train_labels)
-    elif classifier_to_use == "gaussiannaivebayes":
-        nb_model, tfidf_vect  = generate_gaussian_naive_bayes_model(train_data, train_labels)
+    elif classifier_to_use == "complementnaivebayes":
+        nb_model, tfidf_vect  = generate_complement_naive_bayes_model(train_data, train_labels)
+    elif "gaussiannaivebayes" in classifier_to_use:
+            nb_model, tfidf_vect  = generate_gaussian_naive_bayes_model(train_data, train_labels)
+
     else:
         print("Invalid model type: {0}".format(classifier_to_use))
         exit()
     
     dump(nb_model, model_file)
     dump(tfidf_vect, matrix_file)
-    
-    predictions = []
-    for doc in test_data:
-        predictions.append(predictor.predict_individual_doc(nb_model, doc, tfidf_vect))
+  
 
     correct = 0
+    predictions = []
+    for doc in test_data:
+        predictions.append(predictor.predict_individual_doc(nb_model, doc, tfidf_vect)) 
     for i, label in enumerate(predictions):
         if label == test_labels[i]:
             correct += 1
 
-    print("Percentage correct for new model: {0}".format(correct/len(test_labels)))
+    print("Percentage correct for new model {0}: {1}".format(model_file, correct/len(test_labels)))
 
+def generate_and_save_combo():
+    tr_s_d, tr_n_d, te_s_d, te_n_d = get_split_data(T_T_SPLIT)
+    train_labels, test_labels = get_data_labels(tr_s_d, tr_n_d, te_s_d, te_n_d)
+    train_data = tr_s_d + tr_n_d
+    test_data = te_s_d + te_n_d
+
+    prediction_probs = []
+
+    for i, model in enumerate(models):
+        if "complementnaivebayes" in model:
+            nb_model, tfidf_vect  = generate_complement_naive_bayes_model(train_data, train_labels)
+        elif "naivebayes" in model and not "gaussian" in model: #hacky and shite
+            nb_model, tfidf_vect  = generate_naive_bayes_model(train_data, train_labels)
+        else:
+            continue
+
+        prediction_probabs = []
+        for doc in test_data:
+            prediction_probabs.append(predictor.predict_probability_doc(nb_model, doc, tfidf_vect)[0])
+
+        prediction_probs.append(prediction_probabs)
+
+    prediction = []
+    for j in range(len(prediction_probs[0])):
+        avg = [0 for _ in range(len(prediction_probs[0][0]))]
+        for i in range(len(prediction_probs)):
+            for k in range(len(prediction_probs[0][0])):
+                avg[k] += prediction_probs[i][j][k]
+
+        for k in range(len(avg)):
+            avg[k] = avg[k] / len(prediction_probs[0])
+        
+        prediction.append(0 if avg[0] >= avg[1] else 1)
+
+    correct = 0
+    for i, label in enumerate(prediction):
+        if label == test_labels[i]:
+            correct += 1
+
+    print("Percentage correct for combined models: {0}".format(correct/len(test_labels)))
 
 
 def load_model_and_matrix(model_file, matrix_file):
@@ -96,6 +140,9 @@ if __name__ == "__main__":
             i = int(index)
             if i >= len(models):
                 print("Index outside of range of model list.")
+
+    if models[i] == "combo":
+        generate_and_save_combo()
 
     model_file = models[i]
     matrix_file = model_file[:-6] + ".matrix"
