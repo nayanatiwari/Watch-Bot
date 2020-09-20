@@ -14,9 +14,9 @@ for the demo code
 """
 
 with open("ibm_api.key", "r") as f:
-    IBM_KEY = f.read().strip()
+    lines = f.readlines()
+    IBM_KEY, IBM_URL = lines[0], lines[1]
 
-IBM_URL = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/ce4dd669-c69f-4b3b-9fad-9d2b371ab2b5"
 
 NLP_Engine = NaturalLanguageUnderstandingV1(
     version='2020-08-01',
