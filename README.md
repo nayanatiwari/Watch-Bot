@@ -9,7 +9,7 @@ Check out [u/Watch-Bot](https://www.reddit.com/user/Watch-Bot)
 [Ben Lucero](https://www.github.com/benicero) (Pitzer College), [Ryan Hunter](https://www.github.com/0sesame), [Nayana Tiwari](https://www.github.com/nayanatiwari), [Julian Rice](https://www.github.com/jrice15) (rest from Cal Poly San Luis Obispo)
 
 ## Dependancies
-  The most recent releases of sklearn, matplotlib, keras, and seaborn are required to run the Watch-Bot
+  The most recent releases of sklearn, matplotlib, keras, praw, and seaborn are required to run the Watch-Bot
 
 ## Models and Classification
 
@@ -23,7 +23,7 @@ Multinomial Naive Bayesian classification.
   `python3 generate_model.py` will walk you through generating an available non-nueral-net model. It will also output the models results against test data.
   
 ## Running Watch-Bot
-To run Watch-Bot, you'll need reddit api credentials in a file named `praw.ini` in your the base directory of this repository.
+To run Watch-Bot, you'll need reddit api credentials in a file named `praw.ini` in your the base directory of this repository. For demos and tests, please refer to our [slide deck](https://docs.google.com/presentation/d/1M1LxWT-19T4gwqKPujl4ypH3b4fAiF-1Zl8KJHEsuTc/edit). The bot can be run with `python3 bot.py` Test user database can be configured with `python3 test_cases.py` to create a user_database.txt. This file should exist in the top directory for a maintained database between each instance.
 
 
 # Structural Future Changes
