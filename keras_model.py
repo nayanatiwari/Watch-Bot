@@ -133,7 +133,10 @@ class OurModel():
         self.model.save("models/" + self.args.name + "_final.hdf5")
 
 
-    def test(self, inputs, targets, name, confidence=0.3):
+    def test(self, inputs, targets, name, confidence=0.5):
+        """
+        confidence: between 0 (very strict) and 0.5 (0.49 will become 0)
+        """
         predicts = np.squeeze(self.model.predict(inputs))
         targets = K.eval(targets)
 

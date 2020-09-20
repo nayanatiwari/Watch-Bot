@@ -23,13 +23,8 @@ NLP_Engine = NaturalLanguageUnderstandingV1(
     url=IBM_URL,
 )
 
-COUNT = 0
 
-def sentiment_score(input_text): 
-    global COUNT
-    if COUNT % 10 == 0:
-        print(COUNT, end=" ", flush=True)
-    COUNT += 1
+def sentiment_score(input_text):
     # Input text can be sentence, paragraph or document
     response = NLP_Engine.analyze(text=input_text,
         features=Features(sentiment=SentimentOptions())
@@ -39,24 +34,41 @@ def sentiment_score(input_text):
     return res
 
 
+def ibm_request_loop(data):
+    """
+    make a request for each string in list data
+    """
+    out = []
+    count = 0
+    try:
+        for i in data:
+            if count % 20 == 0:
+                print(count, end=" ")
+            count += 1
+            try:
+                score = sentiment_score(i)
+            except Exception as e:
+                print("Exception:", e)
+                score = None
+            out.append(score)
+    except KeyboardInterrupt:
+        print("Keyboard interrupt")
+    return out
+
+
+
 print("\n\npositive examples")
+
 p = load_json_data("pos_data")
-p_sent = []
-try:
-    for i in p:
-        p_sent.append(sentiment_score(i))
-except Exception as e:
-    print("Exception!:", e)
+p = p[:2000]
+p_sent = ibm_request_loop(p)
 save_json_data(p_sent, "pos_data_sentiment")
+
 
 print("\n\nnegative examples")
 n = load_json_data("neg_data")
-n_sent = []
-try:
-    for i in n:
-        n_sent.append(sentiment_score(i))
-except Exception as e:
-    print("Exception!:", e)
+n = n[:2000]
+n_sent = ibm_request_loop(n)
 save_json_data(n_sent, "neg_data_sentiment")
 
 
