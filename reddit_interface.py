@@ -175,7 +175,7 @@ def get_post_authors(subreddit, number):
     """
     sort = "desc"
     sort_type = "created_utc"
-    fields = "created_utc,authors"
+    fields = "created_utc,author"
 
     data = _pushshift_request_full(subreddit = subreddit, sort = sort, sort_type = sort_type, 
         fields = fields, size = number, submissions=True)
