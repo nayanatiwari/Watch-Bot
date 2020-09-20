@@ -67,7 +67,7 @@ class OurModel():
         
         elif name == "bigdense":
             inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
-            x = Embedding(self.hash_buckets, 256)(inpt)
+            x = Embedding(self.hash_buckets, 32)(inpt)
             x = LSTM(256)(x)
             x = Dense(256)(x)
             x = ReLU()(x)
@@ -81,7 +81,7 @@ class OurModel():
 
         elif name == "conv":
             inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
-            x = Embedding(self.hash_buckets, 128)(inpt)
+            x = Embedding(self.hash_buckets, 32)(inpt)
             x = LSTM(128)(x)
             x = Reshape((128,1))(x)
             x = Conv1D(128, 7, padding="valid")(x)
@@ -90,7 +90,6 @@ class OurModel():
             x = Conv1D(64, 7, padding="valid")(x)
             x = MaxPool1D(2)(x)
             x = Conv1D(32, 5, padding="valid")(x)
-            print(x.shape)
             x = Dense(1)(x)
 
             self.model = Model(inpt, x)
