@@ -121,7 +121,7 @@ def pushshift_request(term=None, before=None, after=None, subreddit=None,
 
     data = data["data"]
 
-    if len(data) <= 5 and size > 5:
+    if len(data) <= 5 and size > 10:
         raise ValueError("Only " + str(len(data)) + " results found in pushshift request")
 
     return data
@@ -167,6 +167,24 @@ def get_user_posts(username):
     """
     data = pushshift_request(author=username, after="14d")
     data = format_comments(data)
+    return data
+
+
+def get_post_authors(subreddit, number):
+    """
+    """
+    sort = "desc"
+    sort_type = "created_utc"
+    fields = "created_utc,authors"
+
+    data = _pushshift_request_full(subreddit = subreddit, sort = sort, sort_type = sort_type, 
+        fields = fields, size = number, submissions=True)
+
+    data = data["data"]
+
+    if len(data) <= 5 and number > 10:
+        raise ValueError("Only " + str(len(data)) + " results found in pushshift request")
+
     return data
 
 
