@@ -13,6 +13,7 @@ if you want to generate a model, look at the file generate_model
 available models for get_prediction(model_text...
 
 naivebayes
+gaussiannaivebayes
 """
 
 MODEL_DIR = "models/"
@@ -35,7 +36,6 @@ def get_prediction(model_text, documents=[], data_fname=""):
 
     return predictions
 
-
 """
 model: scikit-learn model
 test_data: list of docs to generate predictions for
@@ -44,12 +44,27 @@ tfidf_vect: scikit-learn fit matrix for model
 def predict_group(model, test_data, tfidf_vect):
     vectorized_test_data, tfidf_vect = tfidf.generate_tfidf_matrix(test_data, test=True, tfidf_vect=tfidf_vect)
     print("Test data dims: {0}".format(vectorized_test_data.shape))
-    predicted = model.predict(vectorized_test_data)
+
+    # try except since gaussian and monomial require data in different forms
+    try:
+        predicted = model.predict(vectorized_test_data)
+    except TypeError:
+        predicted = model.predict(vectorized_test_data.toarray())
     return predicted
 
 def predict_individual_doc(model, doc, tfidf_vect):
     vectorized_doc, tfidf_vect = tfidf.generate_tfidf_matrix([doc], test=True, tfidf_vect=tfidf_vect)
-    return model.predict(vectorized_doc)
+    try:
+        return model.predict(vectorized_doc)
+    except TypeError:
+        return model.predict(vectorized_doc.toarray())
+
+def predict_probability_doc(model, doc, tfidf_vect):
+    vectorized_doc, tfidf_vect = tfidf.generate_tfidf_matrix([doc], test=True, tfidf_vect=tfidf_vect)
+    try:
+        return model.predict_proba(vectorized_doc)
+    except TypeError:
+        return model.predict_proba(vectorized_doc.toarray())
 
 if __name__ == "__main__":
     print("WatchDog Predictor")
@@ -80,6 +95,3 @@ if __name__ == "__main__":
     else:
         print("No models found, please generate one generate_model.py")
         
-
-
-

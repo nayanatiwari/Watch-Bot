@@ -12,6 +12,7 @@ from keras.layers import (LSTM, Activation, Add, BatchNormalization,
                           ZeroPadding1D)
 from keras.optimizers import Adam
 
+
 NUM_HASH_BUCKETS = 10_000
 
 def make_hash_words(sentences):
@@ -97,14 +98,31 @@ class OurModel():
 
         elif name == "sentiment":
             inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
-            inpt2 = Input(shape=[None], dtype=tf.int64, ragged=True)
-            x = Embedding(self.hash_buckets, 16)(inpt)
-            x = Conv1D(32, 7, padding="valid")(x)
-            x = ReLU()(x)
-            x = MaxPool1D(8)(x)
-            x = Conv1D(32, 7, padding="valid")(x)
+            sent_inpt = Input(shape=[6])
 
-            self.model = Model([inpt, inpt2], x)
+            s = Dense(16)(sent_inpt)
+            s = Activation("tanh")(s)
+            s = Dense(6)(s)
+            s = Activation("tanh")(s)
+            s = Dense(1)(s)
+
+            # just big dense
+            x = Embedding(self.hash_buckets, 32)(inpt)
+            x = LSTM(256)(x)
+            x = Dense(256)(x)
+            x = ReLU()(x)
+            x = Dense(128)(x)
+            x = ReLU()(x)
+            x = Dense(32)(x)
+            x = ReLU()(x)
+            x = Dense(1)(x)
+
+            x = Concatenate()([x, s])
+            x = Dense(16)(x)
+            x = Activation("tanh")(x)
+            x = Dense(1)(x)
+
+            self.model = Model([inpt, sent_inpt], x)
 
         else:
             raise ValueError("No model found named '" + str(name) + "'")
