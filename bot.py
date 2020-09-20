@@ -1,6 +1,5 @@
 import praw
 import logging
-from praw.models import MoreComments
 from user import User
             
 def reply_to_enrollment_message(message, users):
@@ -140,7 +139,6 @@ def check_unread_messages(reddit, users):
             default_reply(message, users)
 
 def main():
-    #start_logging()
     reddit = praw.Reddit('Watch-Bot')
     users = {}
     while 1:
