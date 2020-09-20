@@ -22,16 +22,18 @@ def make_hash_words(sentences):
 
 class OurModel():
 
-    def __init__(self, sentences, target_labels, args):
+    def __init__(self, sentences, target_labels, sent_emot, args):
         """
         args:
             sentences: list of strings
             true_labels: list of true labels (True/False array)
+            sent_emot: sentiment/emotion vectors
         """
         global NUM_HASH_BUCKETS
         self.data_len = len(target_labels)
         self.sentences = tf.constant(sentences)
         self.target_labels = tf.constant(target_labels)
+        self.sent_emot = tf.constant(sent_emot)
         self.args = args
 
         # Preprocess the input strings.
@@ -49,13 +51,27 @@ class OurModel():
 
         # manual validation split
         split = round(self.data_len * 0.3)
-        self.x = self.hashed_words[:-split]
+
+        x = self.hashed_words[:-split]
+        sentemot_x = self.sent_emot[:-split]
+        valx = self.hashed_words[-split:]
+        val_sentemot_x = self.sent_emot[-split:]
+
+        if self.uses_sentiment:
+            self.x = [x, sentemot_x]
+            self.valx = [valx, val_sentemot_x]
+        else:
+            self.x = x
+            self.valx = valx
+
         self.y = self.target_labels[:-split]
-        self.valx = self.hashed_words[-split:]
         self.valy = self.target_labels[-split:]
+
 
     def make_model(self):
         name = self.args.modelname
+
+        self.uses_sentiment = False
 
         if name == "original":
             inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
@@ -97,6 +113,8 @@ class OurModel():
             self.model = Model(inpt, x)
 
         elif name == "sentiment":
+            self.uses_sentiment = True
+
             inpt = Input(shape=[None], dtype=tf.int64, ragged=True)
             sent_inpt = Input(shape=[6])
 
