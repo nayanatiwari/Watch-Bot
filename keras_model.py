@@ -12,6 +12,9 @@ from keras.layers import (LSTM, Activation, Add, BatchNormalization,
                           ZeroPadding1D)
 from keras.optimizers import Adam
 
+print(tf.__version__)
+print(keras.__version__)
+
 
 NUM_HASH_BUCKETS = 10_000
 
