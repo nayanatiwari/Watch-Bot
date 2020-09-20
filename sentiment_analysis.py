@@ -41,12 +41,22 @@ def sentiment_score(input_text):
 
 print("\n\npositive examples")
 p = load_json_data("pos_data")
-p_sent = [sentiment_score(i) for i in p]
+p_sent = []
+try:
+    for i in p:
+        p_sent.append(sentiment_score(i))
+except Exception as e:
+    print("Exception!:", e)
 save_json_data(p_sent, "pos_data_sentiment")
 
 print("\n\nnegative examples")
 n = load_json_data("neg_data")
-n_sent = [sentiment_score(i) for i in n]
+n_sent = []
+try:
+    for i in n:
+        n_sent.append(sentiment_score(i))
+except Exception as e:
+    print("Exception!:", e)
 save_json_data(n_sent, "neg_data_sentiment")
 
 
