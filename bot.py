@@ -1,7 +1,7 @@
 import praw
 import logging
 from src import reddit_interface
-from src.predictor import get_prediction
+from predictor import get_prediction
 from src.user import User
 PREDICTION_MODEL = "naivebayes"
 

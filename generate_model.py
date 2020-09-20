@@ -6,7 +6,7 @@ from joblib import dump, load
 from sklearn.metrics import precision_score, recall_score
 
 from src import data_util
-from src import predictor
+import predictor
 from src.complementnaivebayes import generate_complement_naive_bayes_model
 from src.gaussianbayes import generate_gaussian_naive_bayes_model
 from src.naivebayes import generate_naive_bayes_model
