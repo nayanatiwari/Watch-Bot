@@ -15,7 +15,9 @@ for the demo code
 
 with open("ibm_api.key", "r") as f:
     lines = f.readlines()
-    IBM_KEY, IBM_URL = lines[0], lines[1]
+    IBM_KEY, IBM_URL = lines[0].strip(), lines[1].strip()
+    print(IBM_KEY)
+    print(IBM_URL)
 
 
 NLP_Engine = NaturalLanguageUnderstandingV1(
