@@ -1,4 +1,4 @@
-from data_gathering import load_json_data
+from src.data_gathering import load_json_data
 import re
 
 def clean_data(data_list):

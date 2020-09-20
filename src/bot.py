@@ -1,8 +1,8 @@
 import praw
 import logging
-import reddit_interface
-from predictor import get_prediction
-from user import User
+from src import reddit_interface
+from src.predictor import get_prediction
+from src.user import User
 PREDICTION_MODEL = "naivebayes"
 
 def upload_users_database(users):

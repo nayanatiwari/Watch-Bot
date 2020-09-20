@@ -1,4 +1,4 @@
-import tfidf
+from src import tfidf
 from sklearn.naive_bayes import GaussianNB
 
 def generate_gaussian_naive_bayes_model(train_data, train_labels):

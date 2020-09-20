@@ -1,12 +1,14 @@
-import os.path
-import data_util
 import copy
+import os.path
 import random
-import predictor
-from naivebayes import generate_naive_bayes_model
-from gaussianbayes import generate_gaussian_naive_bayes_model
-from complementnaivebayes import generate_complement_naive_bayes_model
+
 from joblib import dump, load
+
+from src import data_util
+from src import predictor
+from src.complementnaivebayes import generate_complement_naive_bayes_model
+from src.gaussianbayes import generate_gaussian_naive_bayes_model
+from src.naivebayes import generate_naive_bayes_model
 
 models = ["models/naivebayes.model", "models/gaussiannaivebayes.model", "models/complementnaivebayes.model" ,"combo"]
 matrices = ["models/naivebayes.matrix", "models/gaussiannaivebayes.matrix", "models/complementnaivebayes.model"]
@@ -159,6 +161,3 @@ if __name__ == "__main__":
             exit()
     else:
         generate_and_save_model(model_file, matrix_file)
-
-
-    

@@ -1,4 +1,4 @@
-import tfidf
+from src import tfidf
 import copy
 import random
 import data_util

@@ -2,7 +2,7 @@ import json
 import os
 import time
 
-from reddit_interface import *
+from src.reddit_interface import *
 
 
 def save_json_data(data, filename):

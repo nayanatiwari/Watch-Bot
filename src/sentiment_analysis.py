@@ -1,4 +1,4 @@
-from data_gathering import *
+from src.data_gathering import *
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import (
     CategoriesOptions, EntitiesOptions, Features, KeywordsOptions,

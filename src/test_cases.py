@@ -1,5 +1,5 @@
-import reddit_interface
-from user import User
+from src import reddit_interface
+from src.user import User
 
 def add_users_to_database(users):
     fp = open("users_database.txt", "w")

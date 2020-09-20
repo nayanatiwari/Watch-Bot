@@ -4,9 +4,9 @@ import numpy as np
 import argparse
 import re
 
-from reddit_interface import *
-from keras_model import *
-from data_gathering import *
+from src.reddit_interface import *
+from src.keras_model import *
+from src.data_gathering import *
 
 # np.random.seed(0)
 # tf.random.set_seed(0)
