@@ -1,6 +1,7 @@
 import praw
 import logging
 import reddit_interface
+from predictor import get_prediction
 from user import User
 PREDICTION_MODEL = "naivebayes"
 
@@ -11,7 +12,7 @@ def upload_users_database(users):
     for line in lines:
         line_list = line.split(",")
         new_user = User(line_list[0])
-        new_user.contacts = line_list[1]
+        new_user.contacts = line_list[1].strip('][').split(', ') 
         if (line_list[2].strip()) == "True":
             new_user.finished_enrolling = True
         else:
@@ -165,6 +166,7 @@ at anytime. Thank you and we wish you the best!"
 def notify_contacts(redditor, users, reddit):
     contacts = users[redditor].contacts
     for contact in contacts:
+        contact = contact.strip('\'')
         message = create_notification_message(contact, redditor)
         reddit.redditor(contact).message('WARNING: {0} Suicidal Post Flag'.format(redditor), message)
 
@@ -199,15 +201,15 @@ def check_user_posts(reddit, users):
     for user in users:
         try:
             post_data = reddit_interface.get_user_posts(user)
-        except ValueError:
+        except ValueError as e:
             post_data = []
 
         if post_data == []:
-            return 0
+            continue
 
         # combine posts into one long string to treat as single doc
         post_data_one_doc = " ".join(post_data)
-        prediction = get_prediction(PREDICTION_MODEL, documents=[post_dat_one_doc]) 
+        prediction = get_prediction(PREDICTION_MODEL, documents=[post_data_one_doc]) 
         
         if prediction[0] == 1:
             notify_contacts(users[user].redditor, users, reddit) 

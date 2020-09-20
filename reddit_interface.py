@@ -121,7 +121,7 @@ def pushshift_request(term=None, before=None, after=None, subreddit=None,
 
     data = data["data"]
 
-    if len(data) <= 5 and size > 10:
+    if len(data) == 0:
         raise ValueError("Only " + str(len(data)) + " results found in pushshift request")
 
     return data
