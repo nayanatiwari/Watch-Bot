@@ -1,8 +1,10 @@
-from src import tfidf
 import copy
 import random
-import data_util
+
 from sklearn.naive_bayes import ComplementNB
+
+from src import data_util, tfidf
+
 
 def generate_complement_naive_bayes_model(train_data, train_labels):
   
