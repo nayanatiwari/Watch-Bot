@@ -1,8 +1,56 @@
 import praw
 import logging
 from user import User
-
 PREDICTION_MODEL = "naivebayes"
+
+def upload_users_database(users):
+    fp = open("users_database.txt", "r")
+    lines = fp.readlines()
+    fp.close()
+    for line in lines:
+        line_list = line.split(",")
+        print(line_list)
+        new_user = User(line_list[0])
+        new_user.contacts = line_list[1]
+        if (line_list[2].strip()) == "True":
+            new_user.finished_enrolling = True
+        else:
+            new_user.finished_enrolling = False
+        users[new_user.redditor] = new_user
+
+def update_users_database(user):
+    fp = open("users_database.txt", "a")
+    fp.write("{0},{1},{2}\n".format(user.redditor, 
+        user.contacts, user.finished_enrolling))
+    fp.close()
+
+def update_contact_info_in_database(user):
+    fp = open("users_database.txt", "r")
+    lines = fp.readlines()
+    fp.close()
+    for i in range(len(lines)):
+        line_list = lines[i].split(",")
+        if user.redditor == line_list[0]:
+            lines[i] = "{0},{1},{2}\n".format(user.redditor, 
+        user.contacts, user.finished_enrolling)
+    fp = open("users_database.txt", "w")
+    for line in lines:
+        fp.write(line)
+    fp.close()
+
+
+def delete_user_from_database(redditor):
+    fp = open("users_database.txt", "r")
+    lines = fp.readlines()
+    write_lines = []
+    for i in range(len(lines)):
+        line_list = lines[i].split(",")
+        if redditor != line_list[0]:
+            write_lines.append(lines[i])
+    fp = open("users_database.txt", "w")
+    for line in write_lines:
+        fp.write(line)
+    fp.close()
             
 def reply_to_enrollment_message(message, users):
     enrollment_reply_message = "Thank you for reaching out to Watch-Bot! If you are having suicidal thoughts please\
@@ -11,8 +59,9 @@ def reply_to_enrollment_message(message, users):
  please reply with the reddit username of someone who can be contacted if you post something determined to have suicidal\
  sentiment.\n\nFor your message, type Contact: [reddit username],[reddit username],[reddit username] with no\
  spaces between the commas!\n\n You can opt-out at any time by sending us a message with LEAVE in it."
-    new_user = User(message.author)
+    new_user = User(str(message.author))
     users.update({new_user.redditor:new_user})
+    update_users_database(new_user)
     message.mark_read()
     message.reply(enrollment_reply_message)
 
@@ -23,21 +72,25 @@ def check_for_enrollment_message(message, users):
     for option in subject_line_options:
         if option in subject:
             valid_subject = True
-    if message.subreddit is None and valid_subject and message.author not in users:
-            return True
+    if message.subreddit is None and valid_subject and str(message.author) not in users.keys():
+        return True
     return False
 
 def iterate_contact_info_message(message, users, reddit):
     message_list = message.body.split()
+    replied = False
     for index in range(0, len(message_list) - 1):
         word = message_list[index]
-        if word.lower() == "contact:":
+        if word.lower() == "contact:" and not replied:
             reply_to_contact_info_message(message, users, message_list[index+1], reddit)
-    else:
+            replied = True
+    if not replied:
         default_reply(message, users)
 
 def default_reply(message, users):
-    if message.author in users and users[message.author].finished_enrolling:
+    redditor = str(message.author)
+    if redditor in users and users[redditor].finished_enrolling:
+        print(users[redditor].finished_enrolling)
         enrolled_status_message = "You are already enrolled in the Watch-Bot service. There \
 are no additional steps at this time. Opt-out by messaging us \"LEAVE\". Thank you!"
     else:
@@ -58,8 +111,10 @@ redditors. Please verify their usernames and submit the \"Contact: [reddit usern
 message again."
         message.reply(invalid_contact_info_reply_message)
     else:
-        users[message.author].contacts = contacts
-        users[message.author].finished_enrolling = True
+        user = users[str(message.author)]
+        user.contacts = contacts
+        user.finished_enrolling = True
+        update_contact_info_in_database(user)
         message.mark_read()
         contact_info_reply_message = "Thank you for submitting your contact information! If a suicidal post \
 is detected the users " + print_contacts(contacts) + " will be contacted via private message. You are officially \
@@ -88,17 +143,18 @@ def validate_contacts(reddit, contacts):
     return True
 
 def check_for_contact_info_message(message, users):
-    if message.author in users and "contact: " in message.body.lower():
+    if str(message.author) in users and "contact: " in message.body.lower():
         return True
     return False
 
 def check_for_leave_message(message, users):
-    if "leave" in message.body.lower() and message.author in users:
+    if "leave" in message.body.lower() and str(message.author) in users:
         return True
     return False
 
 def reply_to_leave_message(message, users):
-    users.pop(message.author)
+    users.pop(str(message.author))
+    delete_user_from_database(str(message.author))
     message.mark_read()
     leave_reply_message = "You have successfully opted out of the Watch-Bot service, \
 If you are having any suicidal thoughts please call this crisis line:  1-800-273-8255 \
@@ -157,6 +213,9 @@ def check_user_posts(reddit, users):
 def main():
     reddit = praw.Reddit('Watch-Bot')
     users = {}
+    upload_users_database(users)
+    for user in users.values():
+        print(user)
     while 1:
         check_unread_messages(reddit, users)
         check_user_posts(reddit, users)

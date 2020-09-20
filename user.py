@@ -8,4 +8,4 @@ class User:
     
     def __str__(self):
         return ("User: {0}\tContacts: {1}\tFinished Enrolling?: {2}".format(
-            self.redditor.name, self.contacts, self.finished_enrolling))
+            self.redditor, self.contacts, self.finished_enrolling))
