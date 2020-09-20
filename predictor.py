@@ -35,9 +35,7 @@ def get_prediction(model_text, documents=[], data_fname="", probs=False):
             data_fname = input("Enter name of data json file in data/ with no .json suffix: ")
         
         documents = get_data_from_jsonfile(data_fname)
-
-    if probs:
-
+        
     predictions = predict_group(model, documents, matrix)
 
     return predictions
