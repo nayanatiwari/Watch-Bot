@@ -91,6 +91,7 @@ class OurModel():
             x = MaxPool1D(2)(x)
             x = Conv1D(16, 5, padding="valid")(x)
             x = GlobalMaxPool1D()(x)
+            x = Dense(1)(x)
 
             self.model = Model(inpt, x)
 
