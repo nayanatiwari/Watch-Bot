@@ -54,7 +54,10 @@ def predict_group(model, test_data, tfidf_vect):
 
 def predict_individual_doc(model, doc, tfidf_vect):
     vectorized_doc, tfidf_vect = tfidf.generate_tfidf_matrix([doc], test=True, tfidf_vect=tfidf_vect)
-    return model.predict(vectorized_doc)
+    try:
+        return model.predict(vectorized_doc)
+    except TypeError:
+        return model.predict(vectorized_doc.toarray())
 
 if __name__ == "__main__":
     print("WatchDog Predictor")

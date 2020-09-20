@@ -65,7 +65,10 @@ def generate_and_save_model(model_file, matrix_file):
     dump(nb_model, model_file)
     dump(tfidf_vect, matrix_file)
     
-    predictions = predictor.predict_group(nb_model, test_data, tfidf_vect)
+    predictions = []
+    for doc in test_data:
+        predictions.append(predictor.predict_individual_doc(nb_model, doc, tfidf_vect))
+
     correct = 0
     for i, label in enumerate(predictions):
         if label == test_labels[i]:
