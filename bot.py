@@ -39,7 +39,6 @@ def update_contact_info_in_database(user):
         fp.write(line)
     fp.close()
 
-
 def delete_user_from_database(redditor):
     fp = open("users_database.txt", "r")
     lines = fp.readlines()
@@ -164,11 +163,13 @@ at anytime. Thank you and we wish you the best!"
     message.reply(leave_reply_message)
 
 def notify_contacts(redditor, users, reddit):
-    contacts = users[redditor].contacts
-    for contact in contacts:
-        contact = contact.strip('\'')
-        message = create_notification_message(contact, redditor)
-        reddit.redditor(contact).message('WARNING: {0} Suicidal Post Flag'.format(redditor), message)
+    if not users[redditor].notified_contacts:
+        contacts = users[redditor].contacts
+        for contact in contacts:
+            contact = contact.strip('\'')
+            users[redditor].notified_contacts = True
+            message = create_notification_message(contact, redditor)
+            reddit.redditor(contact).message('WARNING: {0} Suicidal Post Flag'.format(redditor), message)
 
 def create_notification_message(contact, redditor):
     return "Hi {0}, this is Watch-Bot, a service your friend {1} to monitor their posts \
@@ -221,6 +222,7 @@ def main():
     while 1:
         check_unread_messages(reddit, users)
         check_user_posts(reddit, users)
+        print("end of first run")
 
 if __name__ == "__main__":
     main()
