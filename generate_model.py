@@ -3,6 +3,7 @@ import os.path
 import random
 
 from joblib import dump, load
+from sklearn.metrics import precision_score, recall_score
 
 from src import data_util
 from src import predictor
@@ -81,6 +82,8 @@ def generate_and_save_model(model_file, matrix_file, being_combined=False):
             correct += 1
 
     print("Percentage correct for new model {0}: {1}".format(model_file, correct/len(test_labels)))
+    print("Precision score: {0}: {1}".format(model_file, precision_score(test_labels, predictions)))
+    print("Recall score: {0}: {1}".format(model_file, recall_score(test_labels, predictions)))
 
 def generate_and_save_combo():
     tr_s_d, tr_n_d, te_s_d, te_n_d = get_split_data(T_T_SPLIT)
