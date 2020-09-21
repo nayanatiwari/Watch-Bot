@@ -1,10 +1,13 @@
-from src import reddit_interface
-from src.user import User
+import reddit_interface
+from user import User
 
 def add_users_to_database(users):
     fp = open("users_database.txt", "w")
+    #set contact_person to username of test account. Do not actually send messages to
+    #reddit users for testing. For now, send messages to self.
+    contact_person = 'Watch-Bot'
     for user in users:
-        fp.write("{0},{1},{2}\n".format(user, ['__nana'], True))
+        fp.write("{0},{1},{2}\n".format(user, [contact_person], True))
     fp.close()
 
 def add_data_to_users(subreddit_list, users):
