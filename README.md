@@ -1,8 +1,8 @@
 # Watch-Bot
 
-HackMIT 2020 Project
+[HackMIT 2020 Project](https://spectacle.hackmit.org/project/224)
 
-Reddit bot service that users can opt-in to that montiors user's posts for suicidal sentiment (using Machine Learning, Naive Bayes Classifier, IBM Watson). If a suicidal post is detected, the user-defined emergency contacts are notified. This is not for currently high-risk people - suicide prevention lifelines and resources are included throughout the program. Rather, we imagine those who have recently recovered or completed therapy would use this service to keep a continuous check on their mental health.
+Suicidal individuals are extremely likely to socially isolate, and, in a global pandemic, social isolation has become the norm for everyone. So, we turned to social media in hopes of leveraging user data to supplement the now-weakened "watch-dog" role that friends and family normally play in our lives. As a proof of concept, we developed an opt-in Reddit bot service that uses an ML text classification model to analyze a user's recent post history for suicidal sentiment. If recent posts indicated a high-risk for suicide, the user-defined emergency contacts are notified. The model can be trained on and expanded to other social media platforms easily.
 
 Check out [u/Watch-Bot](https://www.reddit.com/user/Watch-Bot)
 
